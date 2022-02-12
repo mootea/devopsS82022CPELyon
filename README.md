@@ -50,7 +50,7 @@ Je me connecte via l'adresse 127.0.0.1:5432 avec comme nom d'utilisateur *usr* e
 
 ## Init database
 
-J'ai créé des fichiers pour les scripts SQL à la racine du projet (au même endroit que mon Dockfile) et j'ai créé le dossier *docker-entrypoint-initdb.d*.
+J'ai créé des fichiers pour les scripts SQL à la racine du projet (au même endroit que mon Dockerfile) et j'ai créé le dossier *docker-entrypoint-initdb.d*.
 
 J'ai rajouté les lignes suivantes dans le Dockerfile
 
@@ -79,18 +79,63 @@ ADD Main.java Main.java
 RUN javac Main.java
 CMD java Main
 ```
+On build
+
+```
+docker build . -t auremoote/openjdk
+```
 
 Pour l'éxecuter on utilise donc :
 
 ```
-docker run --name apijava auremoote/apijava
+macintosh % docker run --name apijava auremoote/openjdk
+Hello World!
 ```
-Quand j'essaye de créer le container à partir de l'image openjdk, j'ai l'erreur suivante
+## Multistage build
 
+Création d'un Dockerfile dans à la racine du projet simple-api
+
+``` 
+# Build 
+FROM maven:3.6.3-jdk-11 AS myapp-build 
+ENV MYAPP_HOME /opt/myapp 
+WORKDIR $MYAPP_HOME 
+COPY pom.xml . 
+COPY src ./src 
+RUN mvn package -DskipTests 
+
+# Run 
+FROM openjdk:11-jre 
+ENV MYAPP_HOME /opt/myapp 
+WORKDIR $MYAPP_HOME 
+COPY --from=myapp-build $MYAPP_HOME/target/*.jar $MYAPP_HOME/myapp.jar 
+
+ENTRYPOINT java -jar myapp.jar
 ```
-ERROR [internal] load metadata for docker.io/library/openjdk:16-alpine3.13
+
+On run
 ```
-## ...
+macintosh % docker run --name simple-api auremoote/maven
+ .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+ :: Spring Boot ::                (v2.6.3)
+
+etc...
+```
+
+Et on peut affirmer que 
+```
+COPY --from=myapp-build $MYAPP_HOME/target/*.jar $MYAPP_HOME/myapp.jar 
+```
+du Dockerfile permet de récupérer les fichier générés lors du build afin de réaliser le run avec l'openjdk:11
+
+## Backend API
+
+
 
 # HTTP Server
 

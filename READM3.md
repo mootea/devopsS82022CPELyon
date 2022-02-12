@@ -1,4 +1,6 @@
 # Devops S8 2022 CPE Lyon
+*Ayant été absent pour cause de Covid-19 (retour le 03/02/2022), je n'ai pas pu avoir accès au serveur pour Ansible donc je n'ai pas pu avancer ce TP. J'ai seulement pu me renseigner pour connaitre au minimum le fonctionnement*
+
 # TP 3
 
 # Intro
